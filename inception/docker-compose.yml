@@ -11,21 +11,27 @@ networks:
     name: inception
 
 services:
-#mariadb
+  # mariadb
   mariadb:
-    image: mariadb:user
+    image: mariadb
     container_name: mariadb
     build: ./mariadb
     volumes:
       - mariadb:/var/lib/mysql
-    env_file :
+    env_file:
       - .env
-    networks :
+    networks:
       - inception
     restart: always
-#nginx
+    healthcheck:
+      test: ["CMD", "nc", "-zv", "mariadb", "3306"]
+      interval: 1s
+      timeout: 5s
+      retries: 10
+
+  # nginx
   nginx:
-    image: nginx:user
+    image: nginx
     container_name: nginx
     build: ./nginx
     ports:
@@ -40,16 +46,18 @@ services:
     networks:
       - inception
     restart: always
-#wordpress
+
+  # wordpress
   wordpress:
-    image: wordpress:user
+    image: wordpress
     container_name: wordpress
     build: ./wordpress
     depends_on:
-      - mariadb
+      mariadb:
+        condition: service_healthy
     volumes:
       - wordpress:/var/www/wordpress
-    env_file :
+    env_file:
       - .env
     networks:
       - inception

@@ -1,44 +1,74 @@
 version: '3.8'
 
 volumes:
-  grafana-data:
-    driver: local
-  prometheus-data:
-    driver: local
+  prometheus_data:
+    name: prometheus_data
+  grafana_data:
+    name: grafana_data
+
+networks:
+  prom-graf:
+    name: prom-graf
+  inception:
+    external: true
 
 services:
+  # prometheus
+  prometheus:
+    image: prometheus
+    build: ./prometheus
+    container_name: prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - prometheus_data:/var/lib/prometheus
+      - ./prometheus/config/prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./prometheus/config/web-config.yml:/etc/prometheus/web-config.yml
+    networks:
+      - inception
+      - prom-graf
+
+  # grafana
   grafana:
-    image: docker.io/grafana/grafana-oss:11.1.3
+    image: grafana
+    build: ./grafana
     container_name: grafana
     ports:
       - "3000:3000"
     volumes:
-      - grafana-data:/var/lib/grafana
-    restart: unless-stopped
+      - grafana_data:/var/lib/grafana
+      - ./grafana/config/grafana.ini:/etc/grafana/grafana.ini
+    networks:
+      - inception
+      - prom-graf
 
-  prometheus:
-    image: docker.io/prom/prometheus:v2.53.1
-    container_name: prometheus
-    ports:
-      - 9090:9090
-    command: "--config.file=/etc/prometheus/prometheus.yaml"
+  # mysqld exporter for MariaDB
+  mysqld_exporter:
+    image: prom/mysqld-exporter
+    command:
+      - --config.my-cnf=/etc/.my.cnf
+      - --mysqld.address=mariadb:3306
     volumes:
-      - ./prometheus/config/prometheus.yml:/etc/prometheus/prometheus.yaml:ro
-      - prometheus-data:/prometheus
-    restart: unless-stopped
+      - ./.my.cnf:/etc/.my.cnf
+    ports:
+      - "9104:9104"
+    networks:
+      - inception
+      - prom-graf
 
-  cadvisor:
-    image: gcr.io/cadvisor/cadvisor:v0.50.0
-    container_name: cadvisor
-    ports:
-      - 8080:8080
-    volumes:
-      - /:/rootfs:ro
-      - /run:/run:ro
-      - /sys:/sys:ro
-      - /var/lib/docker/:/var/lib/docker:ro
-      - /dev/disk/:/dev/disk:ro
-    devices:
-      - /dev/kmsg
-    privileged: true
-    restart: unless-stopped
+  # nginx exporter for Nginx
+  nginx_exporter:
+    image: nginx/nginx-prometheus-exporter:latest
+    command: -nginx.scrape-uri https://nginx:443/nginx_status
+    networks:
+      - inception
+      - prom-graf
+
+  # php-fpm exporter for WordPress
+  php_fpm_exporter:
+    image: hipages/php-fpm_exporter
+    environment:
+      FPM_SCRAPE_URI: tcp://wordpress:9000/status
+    networks:
+      - inception
+      - prom-graf

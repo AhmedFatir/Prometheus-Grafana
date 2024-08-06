@@ -1,44 +1,14 @@
 #!/bin/bash
-
-#---------------------------------------------------zsh---------------------------------------------------#
-
-chsh -s $(which zsh)
-wget https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh
-sed -i '553i echo alias wp=\\"wp --allow-root --path=/var/www/wordpress\\" >> ~/.zshrc' /install.sh
-echo "alias zshi='sh /install.sh'" >> ~/.zshrc
-
-#---------------------------------------------------mariadb ping---------------------------------------------------#
-
-ping_mariadb_container() {
-    nc -zv mariadb 3306 > /dev/null
-    return $?
-}
-start_time=$(date +%s)
-end_time=$((start_time + 20))
-while [ $(date +%s) -lt $end_time ]; do
-    ping_mariadb_container
-    if [ $? -eq 0 ]; then
-        echo "[========MARIADB IS UP AND RUNNING========]"
-        break
-    else
-        echo "[========WAITING FOR MARIADB TO START...========]"
-        sleep 1
-    fi
-done
-
-if [ $(date +%s) -ge $end_time ]; then
-    echo "[========MARIADB IS NOT RESPONDING========]"
-fi
-
 #---------------------------------------------------wp installation---------------------------------------------------#
 
 curl -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar
 chmod +x wp-cli.phar
 mv wp-cli.phar /usr/local/bin/wp
 
-cd /var/www/wordpress
 chmod -R 755 /var/www/wordpress/
 chown -R www-data:www-data /var/www/wordpress
+
+cd /var/www/wordpress
 
 check_core_files() {
     wp core is-installed --allow-root > /dev/null

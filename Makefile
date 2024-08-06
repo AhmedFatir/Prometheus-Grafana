@@ -6,6 +6,7 @@ up: build
 
 down:
 	docker-compose -f docker-compose.yml down
+	docker-compose -f ./inception/docker-compose.yml down
 
 stop:
 	docker-compose -f docker-compose.yml stop
@@ -26,6 +27,8 @@ clean:
 	@docker network rm $$(docker network ls -q) || true
 
 re: clean up
+
+du: down up
 
 prune: clean
 	@docker system prune -a --volumes -f

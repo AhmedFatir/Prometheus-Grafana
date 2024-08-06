@@ -2,7 +2,8 @@ FROM debian:bullseye
 
 RUN apt-get update && apt-get upgrade -y
 
-RUN apt-get install -y mariadb-server vim zsh wget git mycli
+RUN apt-get install -y mariadb-server mycli netcat \
+    && rm -rf /var/lib/apt/lists/*
 
 COPY ./conf/mdb_conf.sh /mdb_conf.sh
 
