@@ -11,11 +11,11 @@ route:
 receivers:
   - name: 'email'
     email_configs:
-      - to: '${EMAIL_TO}'
-        from: '${EMAIL_FROM}'
-        smarthost: '${SMTP_HOST}:${SMTP_PORT}'
-        auth_username: '${AUTH_USERNAME}'
-        auth_identity: '${AUTH_IDENTITY}'
-        auth_password: '${AUTH_PASSWORD}'
+      - to: '${EMAIL}'
+        from: 'alertmanager@gmail.com'
+        smarthost: 'smtp.gmail.com:587'
+        auth_username: '${EMAIL}'
+        auth_identity: '${EMAIL}'
+        auth_password: '${EPASS}'
         send_resolved: true
 
