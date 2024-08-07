@@ -20,10 +20,14 @@ services:
     container_name: prometheus
     ports:
       - "9090:9090"
+      - "9093:9093"
+    env_file:
+      - .env
     volumes:
       - prometheus_data:/var/lib/prometheus
       - ./prometheus/config/prometheus.yml:/etc/prometheus/prometheus.yml
       - ./prometheus/config/web-config.yml:/etc/prometheus/web-config.yml
+      - ./prometheus/config/alert_rules.yml:/etc/prometheus/alert_rules.yml
     networks:
       - inception
       - prom-graf
@@ -45,13 +49,12 @@ services:
   # mysqld exporter for MariaDB
   mysqld_exporter:
     image: prom/mysqld-exporter
+    container_name: mysqld_exporter
     command:
       - --config.my-cnf=/etc/.my.cnf
       - --mysqld.address=mariadb:3306
     volumes:
       - ./.my.cnf:/etc/.my.cnf
-    ports:
-      - "9104:9104"
     networks:
       - inception
       - prom-graf
@@ -59,6 +62,7 @@ services:
   # nginx exporter for Nginx
   nginx_exporter:
     image: nginx/nginx-prometheus-exporter:latest
+    container_name: nginx_exporter
     command: -nginx.scrape-uri https://nginx:443/nginx_status
     networks:
       - inception
@@ -67,6 +71,7 @@ services:
   # php-fpm exporter for WordPress
   php_fpm_exporter:
     image: hipages/php-fpm_exporter
+    container_name: php_fpm_exporter
     environment:
       FPM_SCRAPE_URI: tcp://wordpress:9000/status
     networks:

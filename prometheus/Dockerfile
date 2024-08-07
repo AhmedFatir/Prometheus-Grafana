@@ -7,12 +7,13 @@ RUN apt-get update && apt-get install -y \
     openssl \
     apt-transport-https \
     software-properties-common \
+    gettext-base \
     && rm -rf /var/lib/apt/lists/*
 
 # Create Prometheus user and directories
 RUN useradd --no-create-home --shell /bin/false prometheus \
-    && mkdir -p /etc/prometheus /var/lib/prometheus \
-    && chown -R prometheus:prometheus /etc/prometheus /var/lib/prometheus
+    && mkdir -p /etc/prometheus /var/lib/prometheus /etc/alertmanager /var/lib/alertmanager \
+    && chown -R prometheus:prometheus /etc/prometheus /var/lib/prometheus /etc/alertmanager /var/lib/alertmanager
 
 # Download and install Prometheus
 RUN wget https://github.com/prometheus/prometheus/releases/download/v2.40.0/prometheus-2.40.0.linux-amd64.tar.gz \
@@ -25,7 +26,16 @@ RUN wget https://github.com/prometheus/prometheus/releases/download/v2.40.0/prom
     && chown -R prometheus:prometheus /usr/local/bin/prometheus /usr/local/bin/promtool /etc/prometheus/consoles /etc/prometheus/console_libraries \
     && rm -rf prometheus-2.40.0.linux-amd64*
 
-# Generate a self-signed SSL certificate
+# Download and install Alertmanager
+RUN wget https://github.com/prometheus/alertmanager/releases/download/v0.25.0/alertmanager-0.25.0.linux-amd64.tar.gz \
+    && tar -xvzf alertmanager-0.25.0.linux-amd64.tar.gz \
+    && cp alertmanager-0.25.0.linux-amd64/alertmanager /usr/local/bin/ \
+    && cp alertmanager-0.25.0.linux-amd64/amtool /usr/local/bin/ \
+    && cp -r alertmanager-0.25.0.linux-amd64/alertmanager.yml /etc/alertmanager/ \
+    && chown -R prometheus:prometheus /usr/local/bin/alertmanager /usr/local/bin/amtool /etc/alertmanager/ \
+    && rm -rf alertmanager-0.25.0.linux-amd64*
+
+# Generate a self-signed SSL certificate for Prometheus (if needed)
 RUN openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
     -keyout /etc/prometheus/prometheus.key \
     -out /etc/prometheus/prometheus.crt \
@@ -34,13 +44,18 @@ RUN openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
 RUN chown prometheus:prometheus /etc/prometheus/prometheus.key /etc/prometheus/prometheus.crt \
     && chmod 600 /etc/prometheus/prometheus.key /etc/prometheus/prometheus.crt
 
-EXPOSE 9090
-
-# Set Prometheus config directory
+# Set working directory
 WORKDIR /etc/prometheus
 
-# Run Prometheus as a non-root user
+# Copy startup script and alertmanager configuration template
+COPY ./config/start_services.sh /usr/local/bin/start_services.sh
+COPY ./config/alertmanager.yml.tpl /etc/alertmanager/alertmanager.yml.tpl
+
+# Make the startup script executable
+RUN chmod +x /usr/local/bin/start_services.sh
+
+# Run Prometheus and Alertmanager as a non-root user
 USER prometheus
 
-# Start Prometheus
-CMD ["/usr/local/bin/prometheus", "--config.file=/etc/prometheus/prometheus.yml", "--storage.tsdb.path=/var/lib/prometheus", "--web.listen-address=:9090", "--web.config.file=/etc/prometheus/web-config.yml"]
+# Start both Prometheus and Alertmanager using a startup script
+CMD ["/usr/local/bin/start_services.sh"]
