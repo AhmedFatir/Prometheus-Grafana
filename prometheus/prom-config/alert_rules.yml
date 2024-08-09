@@ -5,7 +5,7 @@ groups:
     rules:
       # Alert if any monitored exporter is down
       - alert: InstanceDown
-        expr: up{job=~"mysqld_exporter|nginx_exporter|php_fpm_exporter"} == 0
+        expr: up == 0
         for: 10s
         labels:
           severity: critical

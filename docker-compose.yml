@@ -47,6 +47,23 @@ services:
       - inception
       - prom-graf
 
+  # cadvisor
+  cadvisor:
+    image: cadvisor
+    build:
+      dockerfile: ./exporters/Dockerfile.cadvisor
+    container_name: cadvisor
+    ports:
+      - "8080:8080"
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:rw
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+    networks:
+      - inception
+      - prom-graf
+
   # mysqld exporter for MariaDB
   mysqld_exporter:
     image: mysqld-exporter
