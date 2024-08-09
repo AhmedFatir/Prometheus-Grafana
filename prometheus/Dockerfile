@@ -35,21 +35,28 @@ RUN wget https://github.com/prometheus/alertmanager/releases/download/v0.25.0/al
     && chown -R prometheus:prometheus /usr/local/bin/alertmanager /usr/local/bin/amtool /etc/alertmanager/ \
     && rm -rf alertmanager-0.25.0.linux-amd64*
 
-# Generate a self-signed SSL certificate for Prometheus (if needed)
+# Generate a self-signed SSL certificate
 RUN openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
     -keyout /etc/prometheus/prometheus.key \
     -out /etc/prometheus/prometheus.crt \
     -subj "/C=MO/ST=KH/L=KH/O=1337/OU=1337/CN=localhost/UID=user"
 
+# Copy SSL certificates to Alertmanager directory
+RUN cp /etc/prometheus/prometheus.key /etc/alertmanager/alertmanager.key \
+    && cp /etc/prometheus/prometheus.crt /etc/alertmanager/alertmanager.crt
+
+# Grant SSL permissions to prometheus user
 RUN chown prometheus:prometheus /etc/prometheus/prometheus.key /etc/prometheus/prometheus.crt \
-    && chmod 600 /etc/prometheus/prometheus.key /etc/prometheus/prometheus.crt
+    /etc/alertmanager/alertmanager.key /etc/alertmanager/alertmanager.crt \
+    && chmod 600 /etc/prometheus/prometheus.key /etc/prometheus/prometheus.crt \
+    /etc/alertmanager/alertmanager.key /etc/alertmanager/alertmanager.crt
 
 # Set working directory
 WORKDIR /etc/prometheus
 
 # Copy startup script and alertmanager configuration template
-COPY ./config/start_services.sh /usr/local/bin/start_services.sh
-COPY ./config/alertmanager.yml.tpl /etc/alertmanager/alertmanager.yml.tpl
+COPY ./prom-config/start_services.sh /usr/local/bin/start_services.sh
+COPY ./alert-config/alertmanager.yml.tpl /etc/alertmanager/alertmanager.yml.tpl
 
 # Make the startup script executable
 RUN chmod +x /usr/local/bin/start_services.sh
