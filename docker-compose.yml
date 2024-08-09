@@ -43,6 +43,8 @@ services:
     volumes:
       - grafana_data:/var/lib/grafana
       - ./grafana/config/grafana.ini:/etc/grafana/grafana.ini
+      - ./grafana/config/provisioning:/etc/grafana/provisioning
+      - ./grafana/dashboards:/etc/grafana/dashboards
     networks:
       - inception
       - prom-graf
@@ -69,7 +71,7 @@ services:
     image: mysqld-exporter
     build:
       dockerfile: ./exporters/Dockerfile.mysqld
-    container_name: mysqld_exporter
+    container_name: mysqld-exporter
     command:
       - --config.my-cnf=/etc/.my.cnf
       - --mysqld.address=mariadb:3306
@@ -95,7 +97,7 @@ services:
     image: php-fpm-exporter
     build:
       dockerfile: ./exporters/Dockerfile.php-fpm
-    container_name: php_fpm_exporter
+    container_name: php-fpm-exporter
     environment:
       FPM_SCRAPE_URI: tcp://wordpress:9000/status
     networks:

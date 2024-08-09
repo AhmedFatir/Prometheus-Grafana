@@ -29,10 +29,10 @@ RUN mkdir -p /etc/grafana/ssl && \
     -subj "/C=MO/ST=KH/L=KH/O=1337/OU=1337/CN=localhost/UID=user"
 
 # Copy custom configuration file
-COPY config/grafana.ini /etc/grafana/grafana.ini
-
-# Expose Grafana port
-EXPOSE 3000
+COPY ./config/grafana.ini /etc/grafana/grafana.ini
+# COPY ./config/provisioning/datasources/datasources.yml /etc/grafana/provisioning/datasources/datasources.yml
+# COPY ./config/provisioning/dashboards/dashboards.yml /etc/grafana/provisioning/dashboards/dashboards.yml
+# COPY ./dashboards/ /etc/grafana/provisioning/dashboards/
 
 # Start Grafana
 CMD ["/usr/sbin/grafana-server", "--config=/etc/grafana/grafana.ini", "--homepath=/usr/share/grafana"]
