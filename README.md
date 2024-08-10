@@ -57,5 +57,3 @@ ln -s ~/goinfre/DockerData/com.docker.docker ~/Library/Containers/com.docker.doc
 
 # Open Docker > Preferences > Resources > File Sharing > Add ~/goinfre to Shared Paths.
 ```
-
-## For the full explanation of the project, you can check out my [Medium blog](https://medium.com/@afatir.ahmedfatir/elk-stack-deep-dive-complete-guide-using-docker-fbf31aa842a6) for the complete details.
