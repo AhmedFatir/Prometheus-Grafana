@@ -1,6 +1,6 @@
 global:
-  scrape_interval: 10s
-  evaluation_interval: 10s
+  scrape_interval: 20s
+  evaluation_interval: 20s
 
 alerting:
   alertmanagers:
@@ -22,18 +22,18 @@ scrape_configs:
     tls_config:
       insecure_skip_verify: true
 
-  - job_name: 'cadvisor'
-    static_configs:
-      - targets: ['cadvisor:8080']
-
-  - job_name: 'mysqld_exporter'
+  - job_name: 'mysqld'
     static_configs:
       - targets: ['mysqld_exporter:9104']
 
-  - job_name: 'nginx_exporter'
+  - job_name: 'nginx'
     static_configs:
       - targets: ['nginx_exporter:9113']
 
-  - job_name: 'php_fpm_exporter'
+  - job_name: 'php_fpm'
     static_configs:
       - targets: ['php_fpm_exporter:9253']
+  
+  - job_name: 'node'
+    static_configs:
+      - targets: ['node-exporter:9100']

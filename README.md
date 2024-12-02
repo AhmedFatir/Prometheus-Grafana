@@ -2,7 +2,7 @@
 # Prom-Graf
 
 ## Project Overview
-Prometheus, Grafana, AlertManager, and Exporters using Docker.
+Monitoring System Using Prometheus, Grafana, AlertManager, and Exporters With Docker.
 ## Key Features
 ### Prometheus
 Prometheus is an open-source monitoring and alerting toolkit designed for reliability and scalability. It collects and stores time-series data (metrics) from configured targets at specified intervals, allowing you to monitor various systems, applications, and services. Prometheus uses a powerful query language called PromQL to retrieve and analyze this data.
@@ -50,7 +50,7 @@ AlertManager https://localhost:9093/
 rsync -a ~/Library/Containers/com.docker.docker ~/goinfre/DockerData
 
 # Rename the original directory as a backup in case you need to revert(optional).
-mv ~/Library/Containers/com.docker.docker ~/Library/Containers/com.docker.docker.backup∏∏π◊
+mv ~/Library/Containers/com.docker.docker ~/Library/Containers/com.docker.docker.backup
 
 # Create a symbolic link from the new location back to the original location.
 ln -s ~/goinfre/DockerData/com.docker.docker ~/Library/Containers/com.docker.docker

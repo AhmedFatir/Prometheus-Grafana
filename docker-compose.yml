@@ -1,10 +1,12 @@
 version: '3.8'
 
 volumes:
-  prometheus_data:
-    name: prometheus_data
-  grafana_data:
-    name: grafana_data
+  prometheus:
+    name: prometheus
+  alertmanager:
+    name: alertmanager
+  grafana:
+    name: grafana
 
 networks:
   prom-graf:
@@ -21,17 +23,16 @@ services:
     ports:
       - "9090:9090"
       - "9093:9093"
+    hostname: localhost
     env_file:
       - .env
     volumes:
-      - prometheus_data:/var/lib/prometheus
-      - ./prometheus/prom-config/prometheus.yml:/etc/prometheus/prometheus.yml
-      - ./prometheus/prom-config/web-config.yml:/etc/prometheus/web-config.yml
-      - ./prometheus/prom-config/alert_rules.yml:/etc/prometheus/alert_rules.yml
-      - ./prometheus/alert-config/web-config.yml:/etc/alertmanager/web-config.yml
+      - prometheus:/var/lib/prometheus
+      - alertmanager:/var/lib/alertmanager
     networks:
-      - inception
       - prom-graf
+      - inception
+    restart: always
 
   # grafana
   grafana:
@@ -40,31 +41,14 @@ services:
     container_name: grafana
     ports:
       - "3000:3000"
+    env_file:
+      - .env
     volumes:
-      - grafana_data:/var/lib/grafana
-      - ./grafana/config/grafana.ini:/etc/grafana/grafana.ini
-      - ./grafana/config/provisioning:/etc/grafana/provisioning
-      - ./grafana/dashboards:/etc/grafana/dashboards
+      - grafana:/var/lib/grafana
     networks:
+      - prom-graf 
       - inception
-      - prom-graf
-
-  # cadvisor
-  cadvisor:
-    image: cadvisor
-    build:
-      dockerfile: ./exporters/Dockerfile.cadvisor
-    container_name: cadvisor
-    ports:
-      - "8080:8080"
-    volumes:
-      - /:/rootfs:ro
-      - /var/run:/var/run:rw
-      - /sys:/sys:ro
-      - /var/lib/docker/:/var/lib/docker:ro
-    networks:
-      - inception
-      - prom-graf
+    restart: always
 
   # mysqld exporter for MariaDB
   mysqld_exporter:
@@ -80,6 +64,9 @@ services:
     networks:
       - inception
       - prom-graf
+    restart: always
+    ports:
+      - "9104:9104"
 
   # nginx exporter for Nginx
   nginx_exporter:
@@ -91,6 +78,9 @@ services:
     networks:
       - inception
       - prom-graf
+    restart: always
+    ports:
+      - "9113:9113"
 
   # php-fpm exporter for WordPress
   php_fpm_exporter:
@@ -103,3 +93,17 @@ services:
     networks:
       - inception
       - prom-graf
+    restart: always
+    ports:
+      - "9253:9253"
+  
+  # node exporter for the host machine
+  node-exporter:
+    image: node-exporter
+    build:
+      dockerfile: ./exporters/Dockerfile.node
+    container_name: node-exporter
+    networks:
+      - prom-graf
+      - inception
+    restart: always

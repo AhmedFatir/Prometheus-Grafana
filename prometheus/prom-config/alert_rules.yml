@@ -1,14 +1,9 @@
 groups:
-  - name: service-and-exporter-alerts
-    rules:
   - name: all-instances-alerts
     rules:
-      # Alert if any monitored exporter is down
-      - alert: InstanceDown
+      - alert: Instance-Status-Change
         expr: up == 0
-        for: 10s
-        labels:
-          severity: critical
+        for: 20s
         annotations:
-          summary: "Instance Down"
-          description: "{{ $labels.job }} instance {{ $labels.instance }} is down for more than 10 seconds."
+          summary: "Status Change Detected"
+          description: "[{{ $labels.instance }}] Instance in [{{ $labels.job }}] Job is experiencing status changes."
