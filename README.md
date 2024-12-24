@@ -16,6 +16,8 @@ AlertManager is a Component of the Prometheus ecosystem that handles alerts gene
 ### Exporters
 Prometheus exporters are tools that collect metrics from various systems and applications, converting them into a format that Prometheus can scrape. Exporters provide a way to monitor components that do not natively expose metrics in Prometheus-compatible formats, like databases, hardware, or custom applications.
 
+![](https://github.com/AhmedFatir/AhmedFatir/blob/master/images/Prom-Graf.png)
+
 ## Installation
 
 ### if you don't have docker and docker-compose on your machine
